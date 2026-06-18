@@ -14,6 +14,7 @@ type LibraryClientProps = {
 export default function LibraryClient({ initialItems }: LibraryClientProps) {
   const [items, setItems] = useState(initialItems);
   const [editingItem, setEditingItem] = useState<PracticeItemView | null>(null);
+  const [copyingItem, setCopyingItem] = useState<PracticeItemView | null>(null);
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [confirmState, setConfirmState] = useState<{
@@ -36,22 +37,37 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
     [items]
   );
 
+  async function postNewItem(payload: PracticeItemPayload): Promise<PracticeItemView> {
+    const response = await fetch("/api/practice-items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error("Could not create that practice item.");
+    }
+
+    const created: PracticeItemView = await response.json();
+    setItems((current) => [...current, created]);
+    return created;
+  }
+
   async function createItem(payload: PracticeItemPayload) {
     try {
-      const response = await fetch("/api/practice-items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error("Could not create that practice item.");
-      }
-
-      const created: PracticeItemView = await response.json();
-      setItems((current) => [...current, created]);
+      await postNewItem(payload);
       setAdding(false);
       setMessage("Added.");
+    } catch {
+      throw new Error("Could not create that practice item.");
+    }
+  }
+
+  async function copyItem(payload: PracticeItemPayload) {
+    try {
+      await postNewItem(payload);
+      setCopyingItem(null);
+      setMessage("Copied.");
     } catch {
       throw new Error("Could not create that practice item.");
     }
@@ -145,6 +161,9 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
                 <button className="link-button" type="button" onClick={() => setEditingItem(item)}>
                   Edit
                 </button>
+                <button className="link-button" type="button" onClick={() => setCopyingItem(item)}>
+                  Copy
+                </button>
                 <button
                   className="link-button danger"
                   type="button"
@@ -197,6 +216,26 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
         }
         onClose={() => setEditingItem(null)}
         onSubmit={saveEdit}
+      />
+
+      <QuickAddSheet
+        open={copyingItem !== null}
+        title="Copy practice item"
+        submitLabel="Create copy"
+        initialValues={
+          copyingItem
+            ? {
+                songTitle: copyingItem.songTitle,
+                artist: copyingItem.artist ?? "",
+                title: "",
+                referenceText: "",
+                practiceNotes: "",
+                targetBpm: copyingItem.targetBpm
+              }
+            : undefined
+        }
+        onClose={() => setCopyingItem(null)}
+        onSubmit={copyItem}
       />
 
       <ConfirmDialog
