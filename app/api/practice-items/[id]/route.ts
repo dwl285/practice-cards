@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { archivePracticeItem, updatePracticeItem } from "@/lib/repository";
+import { archivePracticeItem, deletePracticeItem, updatePracticeItem } from "@/lib/repository";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -40,4 +40,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   });
 
   return NextResponse.json(item);
+}
+
+export async function DELETE(_request: Request, context: RouteContext) {
+  const { id } = await context.params;
+  await deletePracticeItem(id);
+  return new NextResponse(null, { status: 204 });
 }

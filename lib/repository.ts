@@ -142,6 +142,10 @@ export async function archivePracticeItem(id: string, archived: boolean): Promis
   return mapItem(item);
 }
 
+export async function deletePracticeItem(id: string): Promise<void> {
+  await prisma.practiceItem.delete({ where: { id } });
+}
+
 export async function saveTempoCheckpoint(id: string, bpm: number): Promise<PracticeItemView> {
   await prisma.tempoCheckpoint.create({
     data: {

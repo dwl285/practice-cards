@@ -98,6 +98,24 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
     }
   }
 
+  async function deleteItem(item: PracticeItemView) {
+    try {
+      const response = await fetch(`/api/practice-items/${item.id}`, {
+        method: "DELETE"
+      });
+
+      if (!response.ok) {
+        setMessage("Could not delete that item.");
+        return;
+      }
+
+      setItems((current) => current.filter((entry) => entry.id !== item.id));
+      setMessage("Deleted.");
+    } catch {
+      setMessage("Could not delete that item.");
+    }
+  }
+
   async function toggleArchive(item: PracticeItemView) {
     try {
       const response = await fetch(`/api/practice-items/${item.id}`, {
@@ -183,6 +201,24 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
                   }
                 >
                   {item.archived ? "Restore" : "Archive"}
+                </button>
+                <button
+                  className="link-button danger"
+                  type="button"
+                  onClick={() =>
+                    setConfirmState({
+                      title: "Delete item?",
+                      message: `Permanently delete "${item.title}"? This also removes its tempo history and cannot be undone.`,
+                      confirmLabel: "Delete",
+                      tone: "danger",
+                      onConfirm: () => {
+                        void deleteItem(item);
+                        setConfirmState(null);
+                      }
+                    })
+                  }
+                >
+                  Delete
                 </button>
               </div>
             </article>
