@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Song {
+  id        String         @id @default(cuid())
+  title     String
+  artist    String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  items     PracticeItem[]
+}
+
+model PracticeItem {
+  id             String            @id @default(cuid())
+  title          String
+  referenceText  String
+  practiceNotes  String?
+  targetBpm      Int?
+  archived       Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  songId         String
+  song           Song              @relation(fields: [songId], references: [id], onDelete: Cascade)
+  checkpoints    TempoCheckpoint[]
+
+  @@index([archived, updatedAt])
+}
+
+model TempoCheckpoint {
+  id             String       @id @default(cuid())
+  bpm            Int
+  createdAt      DateTime     @default(now())
+  practiceItemId String
+  practiceItem   PracticeItem @relation(fields: [practiceItemId], references: [id], onDelete: Cascade)
+
+  @@index([practiceItemId, createdAt])
+}
