@@ -16,7 +16,7 @@ function mapItem(item: {
   archived: boolean;
   createdAt: Date;
   updatedAt: Date;
-  song: { title: string; artist: string | null };
+  song: { title: string; artist: { name: string } | null };
   checkpoints: { bpm: number; createdAt: Date }[];
 }): PracticeItemView {
   const latestCheckpoint = item.checkpoints[0] ?? null;
@@ -24,7 +24,7 @@ function mapItem(item: {
   return {
     id: item.id,
     songTitle: item.song.title,
-    artist: item.song.artist,
+    artist: item.song.artist?.name ?? null,
     title: item.title,
     referenceText: item.referenceText,
     practiceNotes: item.practiceNotes,
@@ -43,7 +43,7 @@ export async function listPracticeItems(includeArchived = false): Promise<Practi
   const items = await prisma.practiceItem.findMany({
     where: includeArchived ? undefined : { archived: false },
     include: {
-      song: true,
+      song: { include: { artist: true } },
       checkpoints: {
         orderBy: { createdAt: "desc" },
         take: 1
@@ -58,13 +58,26 @@ export async function getPracticeQueue(): Promise<PracticeItemView[]> {
   return sortPracticeQueue(await listPracticeItems(false));
 }
 
+async function findOrCreateArtist(artist?: string) {
+  const name = normalizeText(artist);
+  if (!name) {
+    return null;
+  }
+
+  return prisma.artist.upsert({
+    where: { name },
+    update: {},
+    create: { name }
+  });
+}
+
 async function findOrCreateSong(songTitle: string, artist?: string) {
-  const normalizedArtist = normalizeText(artist);
+  const title = songTitle.trim();
+  const artistRecord = await findOrCreateArtist(artist);
+  const artistId = artistRecord?.id ?? null;
+
   const existing = await prisma.song.findFirst({
-    where: {
-      title: songTitle.trim(),
-      artist: normalizedArtist
-    }
+    where: { title, artistId }
   });
 
   if (existing) {
@@ -72,10 +85,7 @@ async function findOrCreateSong(songTitle: string, artist?: string) {
   }
 
   return prisma.song.create({
-    data: {
-      title: songTitle.trim(),
-      artist: normalizedArtist
-    }
+    data: { title, artistId }
   });
 }
 
@@ -91,7 +101,7 @@ export async function createPracticeItem(payload: PracticeItemPayload): Promise<
       targetBpm: payload.targetBpm ?? null
     },
     include: {
-      song: true,
+      song: { include: { artist: true } },
       checkpoints: {
         orderBy: { createdAt: "desc" },
         take: 1
@@ -115,7 +125,7 @@ export async function updatePracticeItem(id: string, payload: PracticeItemPayloa
       targetBpm: payload.targetBpm ?? null
     },
     include: {
-      song: true,
+      song: { include: { artist: true } },
       checkpoints: {
         orderBy: { createdAt: "desc" },
         take: 1
@@ -131,7 +141,7 @@ export async function archivePracticeItem(id: string, archived: boolean): Promis
     where: { id },
     data: { archived },
     include: {
-      song: true,
+      song: { include: { artist: true } },
       checkpoints: {
         orderBy: { createdAt: "desc" },
         take: 1
@@ -157,7 +167,7 @@ export async function saveTempoCheckpoint(id: string, bpm: number): Promise<Prac
   const item = await prisma.practiceItem.findUniqueOrThrow({
     where: { id },
     include: {
-      song: true,
+      song: { include: { artist: true } },
       checkpoints: {
         orderBy: { createdAt: "desc" },
         take: 1

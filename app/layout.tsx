@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Stringsmith",
+  title: "Practice Cards",
   description: "Deliberate guitar practice for hard song excerpts."
 };
 

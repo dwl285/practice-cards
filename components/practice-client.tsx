@@ -44,17 +44,35 @@ function useMetronome(bpm: number) {
     audioRef.current = context;
 
     const tick = () => {
-      const oscillator = context.createOscillator();
+      const now = context.currentTime;
+      const duration = 0.028;
+
+      // Short burst of decaying white noise gives a percussive click rather than a tonal beep.
+      const sampleCount = Math.floor(context.sampleRate * duration);
+      const buffer = context.createBuffer(1, sampleCount, context.sampleRate);
+      const channel = buffer.getChannelData(0);
+      for (let i = 0; i < sampleCount; i += 1) {
+        channel[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount);
+      }
+
+      const noise = context.createBufferSource();
+      noise.buffer = buffer;
+
+      // Band-pass keeps the click tight and bright without the "shh" of full-spectrum noise.
+      const bandpass = context.createBiquadFilter();
+      bandpass.type = "bandpass";
+      bandpass.frequency.value = 2400;
+      bandpass.Q.value = 1.1;
+
       const gain = context.createGain();
-      oscillator.type = "square";
-      oscillator.frequency.value = 1240;
-      gain.gain.value = 0.0001;
-      gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.005);
-      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.065);
-      oscillator.connect(gain);
+      gain.gain.setValueAtTime(0.9, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      noise.connect(bandpass);
+      bandpass.connect(gain);
       gain.connect(context.destination);
-      oscillator.start();
-      oscillator.stop(context.currentTime + 0.07);
+      noise.start(now);
+      noise.stop(now + duration);
     };
 
     void context.resume().then(() => {
@@ -198,11 +216,14 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
       <main className="shell">
         <div className="page stack">
           <div className="toolbar">
-            <span className="toolbar-link active">Play now</span>
-            <Link className="toolbar-link" href="/library">
-              Library
-            </Link>
-            <button className="toolbar-link buttonless" type="button" onClick={() => setSheetOpen(true)}>
+            <div className="toolbar-tabs">
+              <span className="toolbar-link active">Play now</span>
+              <Link className="toolbar-link" href="/library">
+                Library
+              </Link>
+            </div>
+            <button className="toolbar-add" type="button" onClick={() => setSheetOpen(true)} aria-label="Add practice item">
+              <span className="toolbar-add-icon" aria-hidden="true">+</span>
               Add
             </button>
           </div>
@@ -228,11 +249,14 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
     <main className="shell">
       <div className="page stack">
         <div className="toolbar">
-          <span className="toolbar-link active">Play now</span>
-          <Link className="toolbar-link" href="/library">
-            Library
-          </Link>
-          <button className="toolbar-link buttonless" type="button" onClick={() => setSheetOpen(true)}>
+          <div className="toolbar-tabs">
+            <span className="toolbar-link active">Play now</span>
+            <Link className="toolbar-link" href="/library">
+              Library
+            </Link>
+          </div>
+          <button className="toolbar-add" type="button" onClick={() => setSheetOpen(true)} aria-label="Add practice item">
+            <span className="toolbar-add-icon" aria-hidden="true">+</span>
             Add
           </button>
         </div>
@@ -243,12 +267,12 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
             <span className="mini-status">{queue.length} active</span>
           </div>
 
-          <h1 className="compact-title">{currentItem.title}</h1>
-
-          <div className="compact-tags">
-            <span className="pill">{currentItem.songTitle}</span>
-            {currentItem.artist ? <span className="pill">{currentItem.artist}</span> : null}
-            <span className="pill">{currentItem.targetBpm ? `Target ${currentItem.targetBpm}` : "No target"}</span>
+          <div className="compact-heading">
+            <h1 className="compact-title">
+              {currentItem.songTitle}
+              {currentItem.artist ? <span className="compact-artist"> / {currentItem.artist}</span> : null}
+            </h1>
+            <h2 className="compact-subtitle">{currentItem.title}</h2>
           </div>
 
           <p className="reference">{currentItem.referenceText}</p>
@@ -266,8 +290,14 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
           </div>
 
           <div className="tempo-display compact-tempo">
-            <span className="tempo-caption">{dirty ? "Unsaved tempo" : "Working tempo"}</span>
-            <span className="tempo-number">{workingBpm}</span>
+            <div className="tempo-main">
+              <span className="tempo-caption">{dirty ? "Unsaved tempo" : "Working tempo"}</span>
+              <span className="tempo-number">{workingBpm}</span>
+            </div>
+            <div className="tempo-target">
+              <span className="tempo-caption">Target</span>
+              <span className="tempo-target-number">{currentItem.targetBpm ?? "—"}</span>
+            </div>
           </div>
 
           <div className="transport-grid">

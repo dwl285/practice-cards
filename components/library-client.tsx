@@ -140,11 +140,14 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
   return (
     <>
       <div className="toolbar">
-        <Link className="toolbar-link" href="/">
-          Play now
-        </Link>
-        <span className="toolbar-link active">Library</span>
-        <button className="toolbar-link buttonless" type="button" onClick={() => setAdding(true)}>
+        <div className="toolbar-tabs">
+          <Link className="toolbar-link" href="/">
+            Play now
+          </Link>
+          <span className="toolbar-link active">Library</span>
+        </div>
+        <button className="toolbar-add" type="button" onClick={() => setAdding(true)} aria-label="Add practice item">
+          <span className="toolbar-add-icon" aria-hidden="true">+</span>
           Add
         </button>
       </div>
@@ -176,12 +179,15 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
               </div>
 
               <div className="table-actions">
-                <button className="link-button" type="button" onClick={() => setEditingItem(item)}>
-                  Edit
-                </button>
-                <button className="link-button" type="button" onClick={() => setCopyingItem(item)}>
-                  Copy
-                </button>
+                <div className="table-actions-group">
+                  <button className="link-button" type="button" onClick={() => setEditingItem(item)}>
+                    Edit
+                  </button>
+                  <button className="link-button" type="button" onClick={() => setCopyingItem(item)}>
+                    Copy
+                  </button>
+                </div>
+                <div className="table-actions-group">
                 <button
                   className="link-button danger"
                   type="button"
@@ -220,6 +226,7 @@ export default function LibraryClient({ initialItems }: LibraryClientProps) {
                 >
                   Delete
                 </button>
+                </div>
               </div>
             </article>
           ))}

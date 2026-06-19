@@ -197,8 +197,14 @@ button {
   position: sticky;
   top: 0;
   z-index: 10;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.toolbar-tabs {
+  display: flex;
+  flex: 1;
   gap: 6px;
   padding: 6px;
   border: 1px solid var(--line);
@@ -209,6 +215,7 @@ button {
 
 .toolbar-link {
   display: inline-flex;
+  flex: 1;
   justify-content: center;
   align-items: center;
   min-height: 38px;
@@ -224,8 +231,23 @@ button {
   color: var(--text);
 }
 
-.buttonless {
-  background: transparent;
+.toolbar-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.toolbar-add-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+  font-weight: 700;
 }
 
 .compact-card {
@@ -246,11 +268,28 @@ button {
   font-size: 0.85rem;
 }
 
+.compact-heading {
+  display: grid;
+  gap: 4px;
+}
+
 .compact-title {
   margin: 0;
-  font-size: clamp(2rem, 9vw, 3rem);
-  line-height: 0.95;
-  letter-spacing: -0.05em;
+  font-size: clamp(1.4rem, 6vw, 2.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.compact-artist {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.compact-subtitle {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .compact-tags {
@@ -270,9 +309,13 @@ button {
 }
 
 .compact-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  justify-content: space-between;
   gap: 10px;
+}
+
+.compact-meta > div:last-child {
+  text-align: right;
 }
 
 .compact-meta strong {
@@ -280,7 +323,34 @@ button {
 }
 
 .compact-tempo {
+  grid-auto-flow: column;
+  grid-template-columns: 1fr auto;
+  justify-items: stretch;
+  align-items: center;
+  gap: 12px;
   padding-block: 12px;
+}
+
+.tempo-main {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.tempo-target {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line);
+}
+
+.tempo-target-number {
+  font-size: clamp(1.6rem, 7vw, 2.2rem);
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: var(--muted);
 }
 
 .transport-grid {
@@ -353,6 +423,12 @@ button {
 }
 
 .table-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.table-actions-group {
   display: flex;
   gap: 14px;
 }
