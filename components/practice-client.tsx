@@ -45,34 +45,22 @@ function useMetronome(bpm: number) {
 
     const tick = () => {
       const now = context.currentTime;
-      const duration = 0.028;
 
-      // Short burst of decaying white noise gives a percussive click rather than a tonal beep.
-      const sampleCount = Math.floor(context.sampleRate * duration);
-      const buffer = context.createBuffer(1, sampleCount, context.sampleRate);
-      const channel = buffer.getChannelData(0);
-      for (let i = 0; i < sampleCount; i += 1) {
-        channel[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount);
-      }
-
-      const noise = context.createBufferSource();
-      noise.buffer = buffer;
-
-      // Band-pass keeps the click tight and bright without the "shh" of full-spectrum noise.
-      const bandpass = context.createBiquadFilter();
-      bandpass.type = "bandpass";
-      bandpass.frequency.value = 2400;
-      bandpass.Q.value = 1.1;
+      // Triangle tone sweeping 2000 -> 900 Hz gives a woodblock-style click.
+      const oscillator = context.createOscillator();
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(2000, now);
+      oscillator.frequency.exponentialRampToValueAtTime(900, now + 0.03);
 
       const gain = context.createGain();
-      gain.gain.setValueAtTime(0.9, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.5, now + 0.001);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.041);
 
-      noise.connect(bandpass);
-      bandpass.connect(gain);
+      oscillator.connect(gain);
       gain.connect(context.destination);
-      noise.start(now);
-      noise.stop(now + duration);
+      oscillator.start(now);
+      oscillator.stop(now + 0.06);
     };
 
     void context.resume().then(() => {
