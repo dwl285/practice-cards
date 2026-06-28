@@ -35,6 +35,7 @@ export type SongView = {
 };
 
 export type SongPayload = {
+  title?: string;
   artist?: string | null;
   capo?: number | null;
 };

@@ -113,13 +113,31 @@ export default function LibraryClient({ initialItems, initialSongs }: LibraryCli
     });
 
     if (!response.ok) {
-      throw new Error("Could not update that song.");
+      const data = await response.json().catch(() => null);
+      throw new Error(data?.error ?? "Could not update that song.");
     }
 
     const updated: SongView = await response.json();
     setSongs((current) => current.map((s) => (s.id === updated.id ? updated : s)));
     setEditingSong(null);
     setMessage("Saved.");
+  }
+
+  async function deleteSong(song: SongView) {
+    try {
+      const response = await fetch(`/api/songs/${song.id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setMessage(data?.error ?? "Could not delete that song.");
+        return;
+      }
+
+      setSongs((current) => current.filter((entry) => entry.id !== song.id));
+      setMessage("Deleted.");
+    } catch {
+      setMessage("Could not delete that song.");
+    }
   }
 
   async function deleteItem(item: PracticeItemView) {
@@ -302,6 +320,28 @@ export default function LibraryClient({ initialItems, initialSongs }: LibraryCli
                       Edit
                     </button>
                   </div>
+                  {song.itemCount === 0 ? (
+                    <div className="table-actions-group">
+                      <button
+                        className="link-button danger"
+                        type="button"
+                        onClick={() =>
+                          setConfirmState({
+                            title: "Delete song?",
+                            message: `Permanently delete "${song.title}"? This song has no practice cards and cannot be undone.`,
+                            confirmLabel: "Delete",
+                            tone: "danger",
+                            onConfirm: () => {
+                              void deleteSong(song);
+                              setConfirmState(null);
+                            }
+                          })
+                        }
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               </article>
             ))}

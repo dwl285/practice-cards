@@ -175,10 +175,12 @@ export async function listSongs(): Promise<SongView[]> {
 
 export async function updateSong(id: string, payload: SongPayload): Promise<SongView> {
   const artistRecord = await findOrCreateArtist(payload.artist ?? undefined);
+  const title = payload.title?.trim();
 
   const song = await prisma.song.update({
     where: { id },
     data: {
+      ...(title ? { title } : {}),
       artistId: artistRecord?.id ?? null,
       capo: payload.capo ?? null
     },
@@ -192,6 +194,23 @@ export async function updateSong(id: string, payload: SongPayload): Promise<Song
     capo: song.capo,
     itemCount: song.items.length
   };
+}
+
+export class SongHasItemsError extends Error {
+  constructor() {
+    super("SONG_HAS_ITEMS");
+    this.name = "SongHasItemsError";
+  }
+}
+
+export async function deleteSong(id: string): Promise<void> {
+  const itemCount = await prisma.practiceItem.count({ where: { songId: id } });
+
+  if (itemCount > 0) {
+    throw new SongHasItemsError();
+  }
+
+  await prisma.song.delete({ where: { id } });
 }
 
 export async function saveTempoCheckpoint(id: string, bpm: number): Promise<PracticeItemView> {

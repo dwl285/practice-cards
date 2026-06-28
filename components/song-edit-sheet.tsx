@@ -11,6 +11,7 @@ type SongEditSheetProps = {
 };
 
 export default function SongEditSheet({ open, song, onClose, onSubmit }: SongEditSheetProps) {
+  const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [capo, setCapo] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -18,6 +19,7 @@ export default function SongEditSheet({ open, song, onClose, onSubmit }: SongEdi
 
   useEffect(() => {
     if (open && song) {
+      setTitle(song.title);
       setArtist(song.artist ?? "");
       setCapo(song.capo);
       setSubmitting(false);
@@ -46,8 +48,12 @@ export default function SongEditSheet({ open, song, onClose, onSubmit }: SongEdi
 
           <div className="fieldset">
             <div className="field">
-              <label>Song title</label>
-              <input value={song.title} disabled style={{ opacity: 0.5 }} />
+              <label htmlFor="songTitle">Song title</label>
+              <input
+                id="songTitle"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </div>
 
             <div className="field">
@@ -83,6 +89,11 @@ export default function SongEditSheet({ open, song, onClose, onSubmit }: SongEdi
             type="button"
             disabled={submitting}
             onClick={async () => {
+              if (!title.trim()) {
+                setError("Song title is required.");
+                return;
+              }
+
               if (capo !== null && (capo < 0 || capo > 11)) {
                 setError("Capo must be between 0 and 11.");
                 return;
@@ -93,6 +104,7 @@ export default function SongEditSheet({ open, song, onClose, onSubmit }: SongEdi
 
               try {
                 await onSubmit(song.id, {
+                  title: title.trim(),
                   artist: artist.trim() || null,
                   capo
                 });
