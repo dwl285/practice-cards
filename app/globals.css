@@ -250,6 +250,36 @@ button {
   font-weight: 700;
 }
 
+.library-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(246, 243, 238, 0.94);
+  backdrop-filter: blur(10px);
+}
+
+.library-tab {
+  display: inline-flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.library-tab.active {
+  background: #fff;
+  border-color: var(--line);
+  color: var(--text);
+}
+
 .compact-card {
   display: grid;
   gap: 12px;

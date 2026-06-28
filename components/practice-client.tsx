@@ -264,6 +264,7 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
           </div>
 
           <p className="reference">{currentItem.referenceText}</p>
+          {currentItem.capo !== null ? <p className="compact-note">Capo {currentItem.capo}</p> : null}
           {currentItem.practiceNotes ? <p className="compact-note">{currentItem.practiceNotes}</p> : null}
 
           <div className="compact-meta">
