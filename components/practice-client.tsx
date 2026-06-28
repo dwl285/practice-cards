@@ -31,6 +31,14 @@ function useMetronome(bpm: number) {
     window.localStorage.setItem("metronome-running", running ? "true" : "false");
   }, [running]);
 
+  // Stop the metronome when leaving the practice page so it does not resume
+  // (via the persisted flag) the next time the page mounts.
+  useEffect(() => {
+    return () => {
+      window.localStorage.setItem("metronome-running", "false");
+    };
+  }, []);
+
   useEffect(() => {
     if (!running) {
       if (intervalRef.current) {
@@ -130,6 +138,7 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
       return;
     }
 
+    setRunning(false);
     setBusy(true);
     setNotice(null);
 
@@ -163,6 +172,7 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
       return;
     }
 
+    setRunning(false);
     setBusy(true);
     try {
       const response = await fetch(`/api/practice-items/${currentItem.id}`, {
@@ -344,6 +354,7 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
               type="button"
               onClick={() =>
                 confirmDiscard(() => {
+                  setRunning(false);
                   setQueue((current) => skipWithinQueue(current));
                   setNotice("Skipped.");
                   setConfirmState(null);
