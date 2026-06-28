@@ -220,7 +220,10 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
                 Library
               </Link>
             </div>
-            <button className="toolbar-add" type="button" onClick={() => setSheetOpen(true)} aria-label="Add practice item">
+            <button className="toolbar-add" type="button" onClick={() => {
+              setRunning(false);
+              setSheetOpen(true);
+            }} aria-label="Add practice item">
               <span className="toolbar-add-icon" aria-hidden="true">+</span>
               Add
             </button>
@@ -253,7 +256,10 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
               Library
             </Link>
           </div>
-          <button className="toolbar-add" type="button" onClick={() => setSheetOpen(true)} aria-label="Add practice item">
+          <button className="toolbar-add" type="button" onClick={() => {
+              setRunning(false);
+              setSheetOpen(true);
+            }} aria-label="Add practice item">
             <span className="toolbar-add-icon" aria-hidden="true">+</span>
             Add
           </button>
