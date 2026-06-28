@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { STARTING_BPM, sortPracticeQueue } from "@/lib/practice-priority";
-import type { PracticeItemPayload, PracticeItemView } from "@/lib/types";
+import type { PracticeItemPayload, PracticeItemView, SongPayload, SongView } from "@/lib/types";
 
 function normalizeText(value: string | undefined): string | null {
   const normalized = value?.trim();
@@ -16,15 +16,17 @@ function mapItem(item: {
   archived: boolean;
   createdAt: Date;
   updatedAt: Date;
-  song: { title: string; artist: { name: string } | null };
+  song: { id: string; title: string; capo: number | null; artist: { name: string } | null };
   checkpoints: { bpm: number; createdAt: Date }[];
 }): PracticeItemView {
   const latestCheckpoint = item.checkpoints[0] ?? null;
 
   return {
     id: item.id,
+    songId: item.song.id,
     songTitle: item.song.title,
     artist: item.song.artist?.name ?? null,
+    capo: item.song.capo,
     title: item.title,
     referenceText: item.referenceText,
     practiceNotes: item.practiceNotes,
@@ -154,6 +156,42 @@ export async function archivePracticeItem(id: string, archived: boolean): Promis
 
 export async function deletePracticeItem(id: string): Promise<void> {
   await prisma.practiceItem.delete({ where: { id } });
+}
+
+export async function listSongs(): Promise<SongView[]> {
+  const songs = await prisma.song.findMany({
+    include: { artist: true, items: { select: { id: true } } },
+    orderBy: [{ title: "asc" }]
+  });
+
+  return songs.map((song) => ({
+    id: song.id,
+    title: song.title,
+    artist: song.artist?.name ?? null,
+    capo: song.capo,
+    itemCount: song.items.length
+  }));
+}
+
+export async function updateSong(id: string, payload: SongPayload): Promise<SongView> {
+  const artistRecord = await findOrCreateArtist(payload.artist ?? undefined);
+
+  const song = await prisma.song.update({
+    where: { id },
+    data: {
+      artistId: artistRecord?.id ?? null,
+      capo: payload.capo ?? null
+    },
+    include: { artist: true, items: { select: { id: true } } }
+  });
+
+  return {
+    id: song.id,
+    title: song.title,
+    artist: song.artist?.name ?? null,
+    capo: song.capo,
+    itemCount: song.items.length
+  };
 }
 
 export async function saveTempoCheckpoint(id: string, bpm: number): Promise<PracticeItemView> {
