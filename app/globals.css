@@ -1,14 +1,68 @@
+/* ============================================================
+   Edition — a quiet, editorial system for deliberate practice.
+   Paper-white ground, ink-black type, hairlines over shadows.
+   No accent hue: emphasis comes from type weight, never colour.
+   ============================================================ */
+
+/* Newsreader — editorial serif: titles, headings, tempo numerals */
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url("/fonts/newsreader.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("/fonts/newsreader-italic.woff2") format("woff2");
+}
+
+/* Hanken Grotesk — labels, controls, body */
+@font-face {
+  font-family: "Hanken Grotesk";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/hanken-grotesk.woff2") format("woff2");
+}
+
+/* Geist Mono — specs and fine captions */
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("/fonts/geist-mono.woff2") format("woff2");
+}
+
 :root {
-  --bg: #f6f3ee;
-  --panel: #ffffff;
-  --line: #e7e0d6;
-  --text: #1b1714;
-  --muted: #746d66;
-  --accent: #1b1714;
-  --success: #2d7b4d;
-  --danger: #9b4635;
-  --shadow: 0 8px 24px rgba(27, 23, 20, 0.05);
-  --font-sans: "Avenir Next", "Segoe UI", sans-serif;
+  /* Five neutrals carry the whole product. */
+  --paper: #f7f6f3; /* app background */
+  --surface: #ffffff; /* cards, sheets, fields */
+  --sunken: #fcfbf8; /* insets, note blocks */
+  --line: #e8e6e0; /* borders, dividers */
+  --faint: #a8a59c; /* target tempo, disabled */
+  --muted: #87857d; /* labels, secondary text */
+  --body: #605d56; /* body copy */
+  --spec: #9a9890; /* mono captions */
+  --ink: #1a1a17; /* text, primary actions */
+  --placeholder: #c4c0b6; /* field placeholders */
+  --underline: #cfccc3; /* ghost / destructive underline */
+
+  /* Compatibility aliases for existing class hooks. */
+  --bg: var(--paper);
+  --panel: var(--surface);
+  --text: var(--ink);
+  --accent: var(--ink);
+
+  --lift: 0 16px 40px rgba(27, 23, 20, 0.12);
+
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", monospace;
 }
 
 * {
@@ -16,20 +70,32 @@
 }
 
 html {
-  background: var(--bg);
+  background: var(--paper);
   min-height: 100%;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Headings default to the editorial serif. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 button,
@@ -54,18 +120,18 @@ button {
 
 .stack {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
+/* Flat in-app surfaces: hairline, no shadow. */
 .card {
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  border-radius: 8px;
+  background: var(--surface);
 }
 
 .section {
-  padding: 14px;
+  padding: 16px;
 }
 
 .row {
@@ -88,9 +154,9 @@ button {
 }
 
 .eyebrow {
-  font-size: 0.72rem;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -100,76 +166,102 @@ button {
   align-items: center;
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 4px 9px;
+  padding: 6px 14px;
   font-size: 0.84rem;
   color: var(--muted);
-  background: #fff;
+  background: var(--surface);
 }
 
 .metric-label {
   display: block;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.65rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
   margin-bottom: 4px;
 }
 
 .reference {
   margin: 0;
-  font-size: 0.98rem;
-  line-height: 1.35;
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: var(--body);
 }
 
+/* ---- Buttons -------------------------------------------------
+   Primary: solid ink. Secondary: hairline. Ghost: underline on ink.
+   Destructive uses ghost — set apart by weight + underline, never red.
+*/
 .button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  min-height: 40px;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--accent);
+  min-height: 44px;
+  padding: 9px 22px;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  background: var(--ink);
   color: #fff;
   font-weight: 700;
+  font-size: 14px;
 }
 
 .button.secondary,
 .button.ghost {
-  background: #fff;
-  color: var(--text);
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.button.ghost {
+  border-color: transparent;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--underline);
 }
 
 .button.save {
-  background: var(--accent);
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
 }
 
+/* Destructive confirm: solid ink, not colour. */
 .button.warn {
-  background: #fff6f4;
-  color: var(--danger);
-  border-color: #f0d8d2;
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
 }
 
 .button:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
+/* ---- Tempo ---------------------------------------------------
+   The hero. Working tempo in serif at full size; target faint
+   beside a hairline.
+*/
 .tempo-display {
   display: grid;
   justify-items: center;
   gap: 2px;
-  padding: 10px;
+  padding: 18px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: #fcfbf8;
+  border-radius: 8px;
+  background: var(--surface);
 }
 
 .tempo-number {
-  font-size: clamp(2.6rem, 13vw, 4rem);
-  line-height: 0.92;
-  font-weight: 800;
-  letter-spacing: -0.08em;
+  font-family: var(--font-serif);
+  font-size: clamp(3.4rem, 18vw, 5.25rem);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .tempo-caption {
@@ -177,22 +269,37 @@ button {
   font-size: 0.8rem;
 }
 
-.nudge-button,
-.transport-button {
+/* Nudges in a five-up grid; Start is solid ink, the only filled control. */
+.nudge-button {
   min-height: 46px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--text);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
   font-weight: 700;
+  font-size: 14px;
 }
 
-.transport-button.active {
-  background: var(--accent);
+.transport-button {
+  min-height: 46px;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  background: var(--ink);
   color: #fff;
-  border-color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
 }
 
+/* Running (Stop): invert to a hairline so the state reads at a glance. */
+.transport-button.active {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+/* ---- Top navigation -----------------------------------------
+   Sticky segmented control plus the standalone Add.
+*/
 .toolbar {
   position: sticky;
   top: 0;
@@ -208,9 +315,8 @@ button {
   gap: 6px;
   padding: 6px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(246, 243, 238, 0.94);
-  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  background: var(--surface);
 }
 
 .toolbar-link {
@@ -219,29 +325,29 @@ button {
   justify-content: center;
   align-items: center;
   min-height: 38px;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 6px;
   color: var(--muted);
   font-weight: 700;
+  font-size: 14px;
 }
 
 .toolbar-link.active {
-  background: #fff;
-  border-color: var(--line);
-  color: var(--text);
+  background: var(--ink);
+  color: #fff;
 }
 
 .toolbar-add {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid var(--accent);
+  padding: 0 16px;
+  border: 1px solid var(--ink);
   border-radius: 10px;
-  background: var(--accent);
+  background: var(--ink);
   color: #fff;
   font-weight: 700;
+  font-size: 14px;
 }
 
 .toolbar-add-icon {
@@ -250,14 +356,14 @@ button {
   font-weight: 700;
 }
 
+/* Lighter sub-segment for views within Library. */
 .library-tabs {
   display: flex;
   gap: 6px;
   padding: 6px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(246, 243, 238, 0.94);
-  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  background: var(--surface);
 }
 
 .library-tab {
@@ -267,29 +373,30 @@ button {
   align-items: center;
   min-height: 34px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 6px;
   background: none;
   color: var(--muted);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
 .library-tab.active {
-  background: #fff;
+  background: var(--paper);
   border-color: var(--line);
-  color: var(--text);
+  color: var(--ink);
 }
 
+/* ---- Practice (Play now) card ------------------------------- */
 .compact-card {
   display: grid;
-  gap: 12px;
-  padding: 14px;
+  gap: 14px;
+  padding: 22px;
 }
 
 .compact-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
 }
 
@@ -300,26 +407,33 @@ button {
 
 .compact-heading {
   display: grid;
-  gap: 4px;
+  gap: 8px;
 }
 
 .compact-title {
   margin: 0;
-  font-size: clamp(1.4rem, 6vw, 2.1rem);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.7rem, 7vw, 2.125rem);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .compact-artist {
-  color: var(--muted);
-  font-weight: 600;
+  color: var(--faint);
+  font-weight: 500;
 }
 
+/* Excerpt subtitle: italic serif, the editorial "verse" voice. */
 .compact-subtitle {
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--muted);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.2;
+  color: var(--body);
 }
 
 .compact-tags {
@@ -330,12 +444,13 @@ button {
 
 .compact-note {
   margin: 0;
-  padding: 10px 12px;
+  padding: 13px 14px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  color: var(--muted);
-  background: #fcfbf8;
-  line-height: 1.35;
+  border-radius: 6px;
+  color: var(--body);
+  background: var(--sunken);
+  line-height: 1.5;
+  font-size: 0.94rem;
 }
 
 .compact-meta {
@@ -350,6 +465,7 @@ button {
 
 .compact-meta strong {
   font-size: 1rem;
+  font-weight: 700;
 }
 
 .compact-tempo {
@@ -358,29 +474,31 @@ button {
   justify-items: stretch;
   align-items: center;
   gap: 12px;
-  padding-block: 12px;
+  padding-block: 18px;
 }
 
 .tempo-main {
   display: grid;
   justify-items: center;
-  gap: 2px;
+  gap: 8px;
 }
 
 .tempo-target {
   display: grid;
   justify-items: center;
-  gap: 2px;
-  padding-left: 12px;
+  gap: 8px;
+  padding-left: 20px;
   border-left: 1px solid var(--line);
 }
 
 .tempo-target-number {
-  font-size: clamp(1.6rem, 7vw, 2.2rem);
-  line-height: 0.95;
-  font-weight: 800;
-  letter-spacing: -0.06em;
-  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 9vw, 2.75rem);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
 }
 
 .transport-grid {
@@ -400,6 +518,7 @@ button {
   font-size: 0.86rem;
 }
 
+/* ---- List rows (Library) ------------------------------------ */
 .table-card {
   overflow: hidden;
 }
@@ -409,8 +528,13 @@ button {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--line);
+}
+
+.table-header strong {
+  font-weight: 700;
+  font-size: 14px;
 }
 
 .table-list {
@@ -420,7 +544,7 @@ button {
 .table-row {
   display: grid;
   gap: 6px;
-  padding: 12px 14px;
+  padding: 16px 18px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -431,48 +555,66 @@ button {
 .table-main {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   align-items: baseline;
 }
 
 .table-main strong {
-  font-size: 1rem;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.15;
+  color: var(--ink);
 }
 
-.table-main span,
-.table-ref,
-.table-meta {
+.table-main span {
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 13px;
+  text-align: right;
+}
+
+.table-ref {
+  color: var(--body);
+  font-size: 0.84rem;
+  line-height: 1.45;
 }
 
 .table-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  color: var(--spec);
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .table-actions {
   display: flex;
   justify-content: space-between;
   gap: 14px;
+  margin-top: 6px;
 }
 
 .table-actions-group {
   display: flex;
-  gap: 14px;
+  gap: 16px;
 }
 
 .link-button {
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   font-weight: 700;
+  font-size: 13px;
 }
 
+/* Destructive: ink + underline, never red. */
 .link-button.danger {
-  color: var(--danger);
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--underline);
 }
 
 .list {
@@ -484,8 +626,8 @@ button {
   display: grid;
   gap: 14px;
   padding: 16px;
-  border-radius: 16px;
-  background: #fff;
+  border-radius: 8px;
+  background: var(--surface);
   border: 1px solid var(--line);
 }
 
@@ -495,10 +637,20 @@ button {
   gap: 10px;
 }
 
+/* Empty states stay quiet and centred. */
 .empty {
   text-align: center;
 }
 
+.empty .compact-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.375rem;
+  color: var(--body);
+}
+
+/* ---- Overlays: the only lifted surfaces --------------------- */
 .sheet-backdrop {
   position: fixed;
   inset: 0;
@@ -520,37 +672,42 @@ button {
 
 .dialog {
   width: min(100%, 360px);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 16px 40px rgba(27, 23, 20, 0.12);
-  padding: 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--lift);
+  padding: 20px;
 }
 
 .dialog-title {
   display: block;
-  font-size: 1rem;
-  margin-bottom: 6px;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.25rem;
+  color: var(--ink);
+  margin-bottom: 8px;
 }
 
 .dialog-message {
   margin: 0;
-  color: var(--muted);
-  line-height: 1.4;
+  color: var(--body);
+  line-height: 1.45;
+  font-size: 0.9rem;
 }
 
 .dialog-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  margin-top: 4px;
 }
 
 .sheet {
   max-height: 88vh;
   overflow: auto;
   border-radius: 20px 20px 0 0;
-  background: #fff;
-  padding: 16px 16px 24px;
+  background: var(--surface);
+  box-shadow: var(--lift);
+  padding: 22px 20px 24px;
 }
 
 .handle {
@@ -558,9 +715,16 @@ button {
   height: 5px;
   border-radius: 999px;
   background: var(--line);
-  margin: 0 auto 14px;
+  margin: 0 auto 18px;
 }
 
+/* Sheet title: editorial serif, paired with an eyebrow above. */
+.sheet h2 {
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+/* ---- Fields: hairline-bordered, bold label above ------------ */
 .field,
 .fieldset {
   display: grid;
@@ -568,17 +732,31 @@ button {
 }
 
 .field label {
-  font-size: 0.9rem;
+  font-size: 13px;
   font-weight: 700;
+  color: var(--ink);
 }
 
 .field input,
 .field textarea {
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 11px 12px;
-  background: #fff;
+  border-radius: 6px;
+  padding: 13px 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--placeholder);
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--ink);
 }
 
 .field textarea {
@@ -592,7 +770,11 @@ button {
   background: transparent;
   color: var(--muted);
   font-weight: 700;
+  font-size: 13px;
   justify-self: start;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--underline);
 }
 
 .nav {
@@ -602,13 +784,15 @@ button {
   gap: 12px;
 }
 
+/* No accent hue: messages read by weight, not colour. */
 .error {
-  color: var(--danger);
+  color: var(--ink);
+  font-weight: 700;
   font-size: 0.9rem;
 }
 
 .success {
-  color: var(--success);
+  color: var(--muted);
 }
 
 @media (min-width: 768px) {

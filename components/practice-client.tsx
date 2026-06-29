@@ -276,11 +276,15 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
               {currentItem.songTitle}
               {currentItem.artist ? <span className="compact-artist"> / {currentItem.artist}</span> : null}
             </h1>
+            {currentItem.capo !== null ? (
+              <div className="compact-tags">
+                <span className="pill">Capo {currentItem.capo}</span>
+              </div>
+            ) : null}
             <h2 className="compact-subtitle">{currentItem.title}</h2>
           </div>
 
           <p className="reference">{currentItem.referenceText}</p>
-          {currentItem.capo !== null ? <p className="compact-note">Capo {currentItem.capo}</p> : null}
           {currentItem.practiceNotes ? <p className="compact-note">{currentItem.practiceNotes}</p> : null}
 
           <div className="compact-meta">
