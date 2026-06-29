@@ -513,6 +513,10 @@ button {
   gap: 6px;
 }
 
+.compact-actions.two-up {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .compact-notice {
   margin: 0;
   font-size: 0.86rem;

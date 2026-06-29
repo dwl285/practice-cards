@@ -8,13 +8,14 @@ import {
   formatPracticeDate,
   getDisplayBpm,
   insertNearFront,
-  skipWithinQueue,
-  sortPracticeQueue
+  repositionAfterSave,
+  skipWithinQueue
 } from "@/lib/practice-ui";
 import type { PracticeItemPayload, PracticeItemView } from "@/lib/types";
 
 type PracticeClientProps = {
   initialQueue: PracticeItemView[];
+  daySeed: string;
 };
 
 function useMetronome(bpm: number) {
@@ -87,7 +88,7 @@ function useMetronome(bpm: number) {
   return { running, setRunning };
 }
 
-export default function PracticeClient({ initialQueue }: PracticeClientProps) {
+export default function PracticeClient({ initialQueue, daySeed }: PracticeClientProps) {
   const [queue, setQueue] = useState(initialQueue);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -155,10 +156,7 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
       }
 
       const updated: PracticeItemView = await response.json();
-      setQueue((current) => {
-        const rest = current.filter((item) => item.id !== updated.id);
-        return sortPracticeQueue([...rest, updated]);
-      });
+      setQueue((current) => repositionAfterSave(current, updated, daySeed));
       setNotice(`Saved ${workingBpm} BPM.`);
     } catch {
       setNotice("Could not save.");
@@ -232,6 +230,109 @@ export default function PracticeClient({ initialQueue }: PracticeClientProps) {
           <section className="card compact-card empty">
             <h1 className="compact-title">Queue cleared</h1>
             <p className="subtitle">No active items left.</p>
+          </section>
+        </div>
+
+        <QuickAddSheet
+          open={sheetOpen}
+          title="Add a practice item"
+          submitLabel="Add to queue"
+          onClose={() => setSheetOpen(false)}
+          onSubmit={createItem}
+        />
+      </main>
+    );
+  }
+
+  if (currentItem.isPlaythrough) {
+    return (
+      <main className="shell">
+        <div className="page stack">
+          <div className="toolbar">
+            <div className="toolbar-tabs">
+              <span className="toolbar-link active">Play now</span>
+              <Link className="toolbar-link" href="/library">
+                Library
+              </Link>
+            </div>
+            <button className="toolbar-add" type="button" onClick={() => {
+              setRunning(false);
+              setSheetOpen(true);
+            }} aria-label="Add practice item">
+              <span className="toolbar-add-icon" aria-hidden="true">+</span>
+              Add
+            </button>
+          </div>
+
+          <section className="card compact-card">
+            <div className="compact-head">
+              <span className="eyebrow">Full playthrough</span>
+              <span className="mini-status">{queue.length} active</span>
+            </div>
+
+            <div className="compact-heading">
+              <h1 className="compact-title">
+                {currentItem.songTitle}
+                {currentItem.artist ? <span className="compact-artist"> / {currentItem.artist}</span> : null}
+              </h1>
+              {currentItem.capo !== null ? (
+                <div className="compact-tags">
+                  <span className="pill">Capo {currentItem.capo}</span>
+                </div>
+              ) : null}
+            </div>
+
+            <p className="reference">{currentItem.referenceText}</p>
+
+            <div className="tempo-display compact-tempo">
+              <div className="tempo-main">
+                <span className="tempo-caption">Tempo</span>
+                <span className="tempo-number">{workingBpm}</span>
+              </div>
+            </div>
+
+            <div className="transport-grid">
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => Math.max(20, current - 5))}>
+                -5
+              </button>
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => Math.max(20, current - 1))}>
+                -1
+              </button>
+              <button className={`transport-button ${running ? "active" : ""}`} type="button" onClick={() => setRunning((current) => !current)}>
+                {running ? "Stop" : "Start"}
+              </button>
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => current + 1)}>
+                +1
+              </button>
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => current + 5)}>
+                +5
+              </button>
+            </div>
+
+            <div className="compact-actions two-up">
+              <button
+                className="button save"
+                type="button"
+                onClick={() => {
+                  setQueue((current) => current.filter((item) => item.id !== currentItem.id));
+                  setNotice("Nice one!");
+                }}
+              >
+                Done
+              </button>
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => {
+                  setQueue((current) => skipWithinQueue(current));
+                  setNotice("Skipped.");
+                }}
+              >
+                Skip
+              </button>
+            </div>
+
+            {notice ? <p className="muted compact-notice">{notice}</p> : null}
           </section>
         </div>
 

@@ -15,6 +15,9 @@ export type PracticeItemView = {
   createdAt: string;
   updatedAt: string;
   isNew: boolean;
+  // True for synthetic "play the whole song through" cards. These are generated
+  // per day, are not persisted, and have no tempo tracking.
+  isPlaythrough?: boolean;
 };
 
 export type PracticeItemPayload = {

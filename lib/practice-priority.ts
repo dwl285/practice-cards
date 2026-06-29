@@ -1,5 +1,6 @@
 import "server-only";
 
+import { dayKey, priorityNoise } from "@/lib/practice-noise";
 import type { PracticeItemView } from "@/lib/types";
 
 export const STARTING_BPM = 70;
@@ -21,19 +22,25 @@ function targetGap(item: PracticeItemView): number {
   return item.targetBpm - item.currentBpm;
 }
 
-export function computePracticePriority(item: PracticeItemView): [number, number, number, number] {
+export function computePracticePriority(
+  item: PracticeItemView,
+  seed: string
+): [number, number, number, number] {
   return [
     item.isNew ? 1 : 0,
-    daysSince(item.lastPractisedAt),
+    daysSince(item.lastPractisedAt) + priorityNoise(item.id, seed),
     targetGap(item),
     -new Date(item.updatedAt).getTime()
   ];
 }
 
-export function sortPracticeQueue(items: PracticeItemView[]): PracticeItemView[] {
+export function sortPracticeQueue(
+  items: PracticeItemView[],
+  seed: string = dayKey()
+): PracticeItemView[] {
   return [...items].sort((left, right) => {
-    const leftPriority = computePracticePriority(left);
-    const rightPriority = computePracticePriority(right);
+    const leftPriority = computePracticePriority(left, seed);
+    const rightPriority = computePracticePriority(right, seed);
 
     for (let index = 0; index < leftPriority.length; index += 1) {
       const delta = rightPriority[index] - leftPriority[index];
