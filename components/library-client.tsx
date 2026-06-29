@@ -188,12 +188,10 @@ export default function LibraryClient({ initialItems, initialSongs }: LibraryCli
           </Link>
           <span className="toolbar-link active">Library</span>
         </div>
-        {tab === "cards" ? (
-          <button className="toolbar-add" type="button" onClick={() => setAdding(true)} aria-label="Add practice item">
-            <span className="toolbar-add-icon" aria-hidden="true">+</span>
-            Add
-          </button>
-        ) : null}
+        <button className="toolbar-add" type="button" onClick={() => setAdding(true)} aria-label="Add practice item">
+          <span className="toolbar-add-icon" aria-hidden="true">+</span>
+          Add
+        </button>
       </div>
 
       <div className="library-tabs">
