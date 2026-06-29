@@ -255,7 +255,10 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
                 Library
               </Link>
             </div>
-            <button className="toolbar-add" type="button" onClick={() => setSheetOpen(true)} aria-label="Add practice item">
+            <button className="toolbar-add" type="button" onClick={() => {
+              setRunning(false);
+              setSheetOpen(true);
+            }} aria-label="Add practice item">
               <span className="toolbar-add-icon" aria-hidden="true">+</span>
               Add
             </button>
@@ -272,10 +275,14 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
                 {currentItem.songTitle}
                 {currentItem.artist ? <span className="compact-artist"> / {currentItem.artist}</span> : null}
               </h1>
+              {currentItem.capo !== null ? (
+                <div className="compact-tags">
+                  <span className="pill">Capo {currentItem.capo}</span>
+                </div>
+              ) : null}
             </div>
 
             <p className="reference">{currentItem.referenceText}</p>
-            {currentItem.capo !== null ? <p className="compact-note">Capo {currentItem.capo}</p> : null}
 
             <div className="tempo-display compact-tempo">
               <div className="tempo-main">
