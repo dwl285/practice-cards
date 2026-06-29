@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { dayKey, noisyPosition } from "@/lib/practice-noise";
 import { STARTING_BPM, sortPracticeQueue } from "@/lib/practice-priority";
 import type { PracticeItemPayload, PracticeItemView, SongPayload, SongView } from "@/lib/types";
+
+// How many full-song playthrough cards to surface each day.
+const DAILY_PLAYTHROUGH_COUNT = 2;
 
 function normalizeText(value: string | undefined): string | null {
   const normalized = value?.trim();
@@ -56,8 +60,53 @@ export async function listPracticeItems(includeArchived = false): Promise<Practi
   return items.map(mapItem);
 }
 
+// Pick a stable-per-day set of songs (drawn from those with active items) and
+// turn each into a synthetic full-playthrough card.
+function buildDailyPlaythroughs(items: PracticeItemView[], seed: string): PracticeItemView[] {
+  const songs = new Map<string, PracticeItemView>();
+  for (const item of items) {
+    if (!songs.has(item.songId)) {
+      songs.set(item.songId, item);
+    }
+  }
+
+  const now = new Date().toISOString();
+
+  return [...songs.values()]
+    .sort((left, right) => noisyPosition(left.songId, `${seed}|pick`, 1_000_000) - noisyPosition(right.songId, `${seed}|pick`, 1_000_000))
+    .slice(0, DAILY_PLAYTHROUGH_COUNT)
+    .map((item) => ({
+      id: `playthrough:${item.songId}:${seed}`,
+      songId: item.songId,
+      songTitle: item.songTitle,
+      artist: item.artist,
+      capo: item.capo,
+      title: "Full playthrough",
+      referenceText: "Play the whole song through at a pace you enjoy.",
+      practiceNotes: null,
+      targetBpm: null,
+      currentBpm: null,
+      startingBpm: STARTING_BPM,
+      lastPractisedAt: null,
+      archived: false,
+      createdAt: now,
+      updatedAt: now,
+      isNew: false,
+      isPlaythrough: true
+    }));
+}
+
 export async function getPracticeQueue(): Promise<PracticeItemView[]> {
-  return sortPracticeQueue(await listPracticeItems(false));
+  const seed = dayKey();
+  const items = await listPracticeItems(false);
+  const queue = sortPracticeQueue(items, seed);
+
+  const playthroughs = buildDailyPlaythroughs(items, seed);
+  for (const playthrough of playthroughs) {
+    queue.splice(noisyPosition(playthrough.id, seed, queue.length), 0, playthrough);
+  }
+
+  return queue;
 }
 
 async function findOrCreateArtist(artist?: string) {

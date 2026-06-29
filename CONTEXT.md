@@ -63,3 +63,11 @@ _Avoid_: Max BPM, limit, cap
 **Tempo Checkpoint**:
 A saved record of the fastest controlled BPM reached for a Practice Item at the end of a practice session. A Tempo Checkpoint may move up or down from earlier checkpoints.
 _Avoid_: Attempt, run, rep
+
+**Song Playthrough**:
+A synthetic, non-persisted card prompting a full, start-to-finish play of a Song at a comfortable pace. A small fixed number of Song Playthroughs is chosen at random each day, has no Target BPM or Tempo Checkpoint, and is dropped into the Practice Queue at a random position.
+_Avoid_: Performance, run-through item, gig
+
+**Queue Noise**:
+A small, deterministic-per-day jitter added to Practice Priority so the next Practice Item is not perfectly predictable. Queue Noise perturbs ordering between similarly-ranked items without overriding newness or long neglect.
+_Avoid_: Shuffle, randomizer, chaos

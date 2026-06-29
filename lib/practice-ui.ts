@@ -1,3 +1,4 @@
+import { dayKey, priorityNoise } from "@/lib/practice-noise";
 import type { PracticeItemView } from "@/lib/types";
 
 function daysSince(dateString: string | null): number {
@@ -17,19 +18,25 @@ function targetGap(item: PracticeItemView): number {
   return item.targetBpm - item.currentBpm;
 }
 
-function computePracticePriority(item: PracticeItemView): [number, number, number, number] {
+function computePracticePriority(
+  item: PracticeItemView,
+  seed: string
+): [number, number, number, number] {
   return [
     item.isNew ? 1 : 0,
-    daysSince(item.lastPractisedAt),
+    daysSince(item.lastPractisedAt) + priorityNoise(item.id, seed),
     targetGap(item),
     -new Date(item.updatedAt).getTime()
   ];
 }
 
-export function sortPracticeQueue(items: PracticeItemView[]): PracticeItemView[] {
+export function sortPracticeQueue(
+  items: PracticeItemView[],
+  seed: string = dayKey()
+): PracticeItemView[] {
   return [...items].sort((left, right) => {
-    const leftPriority = computePracticePriority(left);
-    const rightPriority = computePracticePriority(right);
+    const leftPriority = computePracticePriority(left, seed);
+    const rightPriority = computePracticePriority(right, seed);
 
     for (let index = 0; index < leftPriority.length; index += 1) {
       const delta = rightPriority[index] - leftPriority[index];
@@ -40,6 +47,33 @@ export function sortPracticeQueue(items: PracticeItemView[]): PracticeItemView[]
 
     return left.title.localeCompare(right.title);
   });
+}
+
+// Re-sort the queue after saving a checkpoint, keeping playthrough cards anchored
+// at their existing positions (they aren't part of the priority ordering).
+export function repositionAfterSave(
+  queue: PracticeItemView[],
+  updated: PracticeItemView,
+  seed: string = dayKey()
+): PracticeItemView[] {
+  const remaining = queue.filter((item) => item.id !== updated.id);
+  const pinned: { item: PracticeItemView; index: number }[] = [];
+  const sortable: PracticeItemView[] = [];
+
+  remaining.forEach((item, index) => {
+    if (item.isPlaythrough) {
+      pinned.push({ item, index });
+    } else {
+      sortable.push(item);
+    }
+  });
+
+  const result = sortPracticeQueue([...sortable, updated], seed);
+  for (const { item, index } of pinned) {
+    result.splice(Math.min(index, result.length), 0, item);
+  }
+
+  return result;
 }
 
 export function getDisplayBpm(item: Pick<PracticeItemView, "currentBpm" | "startingBpm">): number {
