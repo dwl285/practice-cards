@@ -32,6 +32,14 @@ function useMetronome(bpm: number) {
     window.localStorage.setItem("metronome-running", running ? "true" : "false");
   }, [running]);
 
+  // Stop the metronome when leaving the practice page so it does not resume
+  // (via the persisted flag) the next time the page mounts.
+  useEffect(() => {
+    return () => {
+      window.localStorage.setItem("metronome-running", "false");
+    };
+  }, []);
+
   useEffect(() => {
     if (!running) {
       if (intervalRef.current) {
@@ -131,6 +139,7 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
       return;
     }
 
+    setRunning(false);
     setBusy(true);
     setNotice(null);
 
@@ -161,6 +170,7 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
       return;
     }
 
+    setRunning(false);
     setBusy(true);
     try {
       const response = await fetch(`/api/practice-items/${currentItem.id}`, {
@@ -208,7 +218,10 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
                 Library
               </Link>
             </div>
-            <button className="toolbar-add" type="button" onClick={() => setSheetOpen(true)} aria-label="Add practice item">
+            <button className="toolbar-add" type="button" onClick={() => {
+              setRunning(false);
+              setSheetOpen(true);
+            }} aria-label="Add practice item">
               <span className="toolbar-add-icon" aria-hidden="true">+</span>
               Add
             </button>
@@ -337,7 +350,10 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
               Library
             </Link>
           </div>
-          <button className="toolbar-add" type="button" onClick={() => setSheetOpen(true)} aria-label="Add practice item">
+          <button className="toolbar-add" type="button" onClick={() => {
+              setRunning(false);
+              setSheetOpen(true);
+            }} aria-label="Add practice item">
             <span className="toolbar-add-icon" aria-hidden="true">+</span>
             Add
           </button>
@@ -354,11 +370,15 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
               {currentItem.songTitle}
               {currentItem.artist ? <span className="compact-artist"> / {currentItem.artist}</span> : null}
             </h1>
+            {currentItem.capo !== null ? (
+              <div className="compact-tags">
+                <span className="pill">Capo {currentItem.capo}</span>
+              </div>
+            ) : null}
             <h2 className="compact-subtitle">{currentItem.title}</h2>
           </div>
 
           <p className="reference">{currentItem.referenceText}</p>
-          {currentItem.capo !== null ? <p className="compact-note">Capo {currentItem.capo}</p> : null}
           {currentItem.practiceNotes ? <p className="compact-note">{currentItem.practiceNotes}</p> : null}
 
           <div className="compact-meta">
@@ -438,6 +458,7 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
               type="button"
               onClick={() =>
                 confirmDiscard(() => {
+                  setRunning(false);
                   setQueue((current) => skipWithinQueue(current));
                   setNotice("Skipped.");
                   setConfirmState(null);
