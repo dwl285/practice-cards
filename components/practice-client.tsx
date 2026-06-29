@@ -309,7 +309,7 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
               </button>
             </div>
 
-            <div className="compact-actions">
+            <div className="compact-actions two-up">
               <button
                 className="button save"
                 type="button"
