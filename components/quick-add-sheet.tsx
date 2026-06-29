@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { PracticeItemPayload, PracticeItemView } from "@/lib/types";
 
 type QuickAddSheetProps = {
@@ -33,15 +33,20 @@ export default function QuickAddSheet({
   const [showExtras, setShowExtras] = useState(Boolean(initialValues));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [wasOpen, setWasOpen] = useState(open);
 
-  useEffect(() => {
+  // Seed the form during render (not in a post-paint effect) the moment the
+  // sheet opens. An Edit/Copy sheet is already mounted with an empty form, so
+  // resetting after paint made it flash empty for a frame before filling in.
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) {
       setForm(initialValues ?? emptyPayload);
       setShowExtras(Boolean(initialValues));
       setSubmitting(false);
       setError(null);
     }
-  }, [initialValues, open]);
+  }
 
   if (!open) {
     return null;
