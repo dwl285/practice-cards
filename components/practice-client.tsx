@@ -102,9 +102,6 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
     if (currentItem) {
       setWorkingBpm(getDisplayBpm(currentItem));
       setDirty(false);
-      if (currentItem.isPlaythrough) {
-        setRunning(false);
-      }
     }
   }, [currentItem?.id]);
 
@@ -266,6 +263,31 @@ export default function PracticeClient({ initialQueue, daySeed }: PracticeClient
 
             <p className="reference">{currentItem.referenceText}</p>
             {currentItem.capo !== null ? <p className="compact-note">Capo {currentItem.capo}</p> : null}
+
+            <div className="tempo-display compact-tempo">
+              <div className="tempo-main">
+                <span className="tempo-caption">Tempo</span>
+                <span className="tempo-number">{workingBpm}</span>
+              </div>
+            </div>
+
+            <div className="transport-grid">
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => Math.max(20, current - 5))}>
+                -5
+              </button>
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => Math.max(20, current - 1))}>
+                -1
+              </button>
+              <button className={`transport-button ${running ? "active" : ""}`} type="button" onClick={() => setRunning((current) => !current)}>
+                {running ? "Stop" : "Start"}
+              </button>
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => current + 1)}>
+                +1
+              </button>
+              <button className="nudge-button" type="button" onClick={() => setWorkingBpm((current) => current + 5)}>
+                +5
+              </button>
+            </div>
 
             <div className="compact-actions">
               <button
